@@ -139,7 +139,7 @@ The application is ready for deployment to any static hosting service:
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under None Free education project.
 
 ## Demo Notice
 
