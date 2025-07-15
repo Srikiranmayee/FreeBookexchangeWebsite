@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Book, Apple, Loader2, AlertCircle, Info, BookOpen, Search } from 'lucide-react';
+import { authConfig, validateAuthConfig } from '../config/auth';
+import { Book, Apple, Loader2, AlertCircle, Info, BookOpen, Search, ExternalLink } from 'lucide-react';
 
 const LoginScreen: React.FC = () => {
   const { login, isLoading, error } = useAuth();
   const [loginProvider, setLoginProvider] = useState<{ provider: 'google' | 'apple'; role: 'donor' | 'collector' } | null>(null);
+  const [configErrors, setConfigErrors] = useState<string[]>([]);
+
+  useEffect(() => {
+    const errors = validateAuthConfig();
+    setConfigErrors(errors);
+  }, []);
 
   const handleLogin = async (provider: 'google' | 'apple', role: 'donor' | 'collector') => {
     setLoginProvider({ provider, role });
@@ -37,13 +44,59 @@ const LoginScreen: React.FC = () => {
             Choose Your Role & Sign In
           </h2>
 
+          {configErrors.length > 0 && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-red-800 font-medium text-sm">Configuration Required</p>
+                  <div className="text-red-700 text-xs mt-1 space-y-1">
+                    {configErrors.map((error, index) => (
+                      <p key={index}>• {error}</p>
+                    ))}
+                  </div>
+                  <div className="mt-3 text-xs text-red-600">
+                    <p className="font-medium">Setup Instructions:</p>
+                    <div className="mt-1 space-y-1">
+                      <p>1. Create a <code className="bg-red-100 px-1 rounded">.env</code> file in your project root</p>
+                      <p>2. Add your OAuth credentials:</p>
+                      <div className="bg-red-100 p-2 rounded mt-1 font-mono text-xs">
+                        REACT_APP_GOOGLE_CLIENT_ID=your-google-client-id<br/>
+                        REACT_APP_APPLE_CLIENT_ID=your-apple-service-id<br/>
+                        REACT_APP_APPLE_REDIRECT_URI=http://localhost:5173
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-3">
             <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-blue-800 font-medium text-sm">Demo Authentication</p>
+              <p className="text-blue-800 font-medium text-sm">Real OAuth Authentication</p>
               <p className="text-blue-700 text-xs mt-1">
-                This is a demonstration platform. Choose your role and sign in method to try the app.
+                This application uses real Google and Apple OAuth. You'll need to configure your OAuth credentials.
               </p>
+              <div className="mt-2 flex gap-2">
+                <a
+                  href="https://console.developers.google.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
+                >
+                  Google Console <ExternalLink className="w-3 h-3" />
+                </a>
+                <a
+                  href="https://developer.apple.com/account/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
+                >
+                  Apple Developer <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
             </div>
           </div>
 
@@ -70,7 +123,7 @@ const LoginScreen: React.FC = () => {
 
               <button
                 onClick={() => handleLogin('google', 'donor')}
-                disabled={isLoading}
+                disabled={isLoading || configErrors.length > 0}
                 className="w-full flex items-center justify-center px-6 py-3 border border-gray-300 rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
               >
                 {isCurrentlyLoading('google', 'donor') ? (
@@ -88,7 +141,7 @@ const LoginScreen: React.FC = () => {
 
               <button
                 onClick={() => handleLogin('apple', 'donor')}
-                disabled={isLoading}
+                disabled={isLoading || configErrors.length > 0}
                 className="w-full flex items-center justify-center px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
               >
                 {isCurrentlyLoading('apple', 'donor') ? (
@@ -112,7 +165,7 @@ const LoginScreen: React.FC = () => {
 
               <button
                 onClick={() => handleLogin('google', 'collector')}
-                disabled={isLoading}
+                disabled={isLoading || configErrors.length > 0}
                 className="w-full flex items-center justify-center px-6 py-3 border border-gray-300 rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
               >
                 {isCurrentlyLoading('google', 'collector') ? (
@@ -130,7 +183,7 @@ const LoginScreen: React.FC = () => {
 
               <button
                 onClick={() => handleLogin('apple', 'collector')}
-                disabled={isLoading}
+                disabled={isLoading || configErrors.length > 0}
                 className="w-full flex items-center justify-center px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
               >
                 {isCurrentlyLoading('apple', 'collector') ? (
