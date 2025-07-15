@@ -43,9 +43,9 @@ Before running the application, you need to set up OAuth credentials:
 
 4. **Update your `.env` file:**
    ```env
-   REACT_APP_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-   REACT_APP_APPLE_CLIENT_ID=your.apple.service.id
-   REACT_APP_APPLE_REDIRECT_URI=http://localhost:5173
+   VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+   VITE_APPLE_CLIENT_ID=your.apple.service.id
+   VITE_APPLE_REDIRECT_URI=http://localhost:5173
    ```
 
 For detailed setup instructions, see [SETUP.md](SETUP.md).
@@ -147,9 +147,9 @@ src/
 Required environment variables:
 
 ```env
-REACT_APP_GOOGLE_CLIENT_ID=your-google-client-id
-REACT_APP_APPLE_CLIENT_ID=your-apple-service-id
-REACT_APP_APPLE_REDIRECT_URI=your-redirect-uri
+VITE_GOOGLE_CLIENT_ID=your-google-client-id
+VITE_APPLE_CLIENT_ID=your-apple-service-id
+VITE_APPLE_REDIRECT_URI=your-redirect-uri
 ```
 
 ## Security Considerations

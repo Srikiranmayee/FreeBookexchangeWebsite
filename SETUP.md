@@ -70,11 +70,11 @@ This application uses real OAuth authentication with Google and Apple. Follow th
 
 ```env
 # Google OAuth
-REACT_APP_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 
 # Apple OAuth
-REACT_APP_APPLE_CLIENT_ID=com.yourcompany.bookshare.web
-REACT_APP_APPLE_REDIRECT_URI=http://localhost:5173
+VITE_APPLE_CLIENT_ID=com.yourcompany.bookshare.web
+VITE_APPLE_REDIRECT_URI=http://localhost:5173
 ```
 
 ### Step 2: Update for Production
@@ -125,7 +125,7 @@ For production deployment, update the redirect URIs in both OAuth providers and 
 ### Debug Mode:
 Add this to your `.env` for debugging:
 ```env
-REACT_APP_DEBUG_AUTH=true
+VITE_DEBUG_AUTH=true
 ```
 
 ## 7. Additional Resources
