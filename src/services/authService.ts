@@ -96,6 +96,15 @@ export class AuthService {
       return user;
     } catch (error) {
       console.error('Google sign-in error:', error);
+      
+      // Handle specific Google OAuth errors
+      if (error && typeof error === 'object' && 'error' in error) {
+        const googleError = error as any;
+        if (googleError.error === 'idpiframe_initialization_failed') {
+          throw new Error(`Not a valid origin for the client: ${window.location.origin} has not been registered for client ID ${authConfig.google.clientId}. Please go to https://console.developers.google.com/ and register this origin for your project's client ID.`);
+        }
+      }
+      
       throw new Error('Google authentication failed. Please try again.');
     }
   }

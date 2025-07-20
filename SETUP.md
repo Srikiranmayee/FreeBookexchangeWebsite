@@ -25,6 +25,7 @@ This application uses real Google OAuth authentication. Follow these steps to co
 3. Choose "Web application"
 4. Add authorized JavaScript origins:
    - `http://localhost:5173` (for development)
+   - Your WebContainer URL (if using StackBlitz/Bolt - copy from browser address bar)
    - Your production domain (for production)
 5. Copy the Client ID
 

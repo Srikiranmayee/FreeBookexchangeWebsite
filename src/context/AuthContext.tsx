@@ -58,7 +58,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       setUser(authenticatedUser);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+      let errorMessage = 'Authentication failed';
+      if (error instanceof Error) {
+        if (error.message.includes('Not a valid origin')) {
+          errorMessage = error.message;
+        } else {
+          errorMessage = error.message;
+        }
+      }
       setError(errorMessage);
       console.error('Google authentication error:', error);
     } finally {
