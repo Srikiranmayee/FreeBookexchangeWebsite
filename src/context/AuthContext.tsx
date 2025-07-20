@@ -67,7 +67,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
       setError(errorMessage);
       console.error(`${provider} authentication error:`, error);
-      throw error;
     } finally {
       setIsLoading(false);
     }

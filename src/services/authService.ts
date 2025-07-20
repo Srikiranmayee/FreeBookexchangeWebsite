@@ -85,6 +85,10 @@ export class AuthService {
 
   async signInWithGoogle(role: 'donor' | 'collector'): Promise<User> {
     try {
+      if (!authConfig.google.clientId) {
+        throw new Error('Google OAuth is not configured. Please set VITE_GOOGLE_CLIENT_ID environment variable.');
+      }
+
       await this.initializeGoogle();
       
       if (!this.googleAuth) {
@@ -128,6 +132,10 @@ export class AuthService {
 
   async signInWithApple(role: 'donor' | 'collector'): Promise<User> {
     try {
+      if (!authConfig.apple.clientId) {
+        throw new Error('Apple OAuth is not configured. Please set VITE_APPLE_CLIENT_ID environment variable.');
+      }
+
       await this.initializeApple();
 
       const response = await window.AppleID.auth.signIn();
