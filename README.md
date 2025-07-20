@@ -164,7 +164,6 @@ The application can be deployed to any static hosting service:
 - GitHub Pages
 - AWS S3 + CloudFront
 
-**Important**: Update OAuth redirect URIs in both Google and Apple consoles to match your production domain.
 **Important**: Update OAuth redirect URIs in Google console to match your production domain.
 
 ## Troubleshooting
