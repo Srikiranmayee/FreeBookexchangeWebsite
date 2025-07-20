@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       let errorMessage = 'Authentication failed';
       if (error instanceof Error) {
-        if (error.message.includes('Not a valid origin')) {
+        if (error.message.includes('idpiframe_initialization_failed') || error.message.includes('Not a valid origin')) {
           errorMessage = error.message;
         } else {
           errorMessage = error.message;
