@@ -1,17 +1,23 @@
-// Generic authentication configuration for demo purposes
+// Real authentication configuration
 export const authConfig = {
-  demo: {
-    enabled: true,
-    simulateDelay: 1500, // Simulate network delay in milliseconds
-  },
   google: {
-    // In a real implementation, these would be actual OAuth settings
-    demo: true,
-    name: 'Google',
+    clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || 'demo-mode',
+    scopes: ['profile', 'email'],
   },
-  apple: {
-    // In a real implementation, these would be actual OAuth settings
-    demo: true,
-    name: 'Apple',
-  },
+};
+
+// Environment variables validation
+export const validateAuthConfig = () => {
+  const errors: string[] = [];
+  
+  if (!authConfig.google.clientId || authConfig.google.clientId === '') {
+    errors.push('Google OAuth Client ID is not configured. Please set VITE_GOOGLE_CLIENT_ID environment variable.');
+  }
+  
+  return errors;
+};
+
+// Check if specific provider is configured
+export const isGoogleConfigured = (): boolean => {
+  return !!(authConfig.google.clientId && authConfig.google.clientId !== '' && authConfig.google.clientId !== 'your-oauth-client-id.apps.googleusercontent.com');
 };

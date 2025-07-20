@@ -1,10 +1,10 @@
 # BookShare - Book Sharing Platform
 
-A modern book sharing platform with simulated social authentication, allowing users to donate and collect books within their community.
+A modern book sharing platform with real Google OAuth authentication, allowing users to donate and collect books within their community.
 
 ## Features
 
-- **Demo Authentication**: Simulated Google and Apple sign-in for demonstration
+- **Real OAuth Authentication**: Google sign-in integration
 - **Dual User Roles**: Book donors and collectors with specialized dashboards
 - **Book Management**: Upload books with images and location details
 - **Advanced Search**: Filter books by title, author, genre, and condition
@@ -20,7 +20,29 @@ A modern book sharing platform with simulated social authentication, allowing us
 npm install
 ```
 
-### 2. Run the Application
+### 2. Configure Authentication
+
+Before running the application, you need to set up OAuth credentials:
+
+1. **Copy the environment template:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Set up Google OAuth:**
+   - Go to [Google Cloud Console](https://console.developers.google.com/)
+   - Create a project and enable Google+ API
+   - Create OAuth credentials and add your domain
+   - Copy the Client ID to your `.env` file
+
+3. **Update your `.env` file:**
+   ```env
+   VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+   ```
+
+For detailed setup instructions, see [SETUP.md](SETUP.md).
+
+### 3. Run the Application
 
 ```bash
 npm run dev
@@ -30,40 +52,41 @@ The application will be available at `http://localhost:5173`
 
 ## How to Use
 
-1. **Login**: Click either "Continue with Google" or "Continue with Apple" (both are simulated for demo purposes)
-2. **Choose Role**: Select whether you want to be a book donor or collector
-3. **Start Sharing**: 
+1. **Configure OAuth**: Follow the setup guide to configure Google OAuth
+2. **Login**: Click "Continue as Donor" or "Continue as Collector" to sign in with Google
+3. **Choose Role**: Select whether you want to be a book donor or collector
+4. **Start Sharing**: 
    - **Donors**: Upload books with photos and pickup locations
    - **Collectors**: Search and request books from the community
 
 ## Authentication System
 
-This platform uses **simulated authentication** for demonstration purposes:
+This platform uses **real Google OAuth authentication**:
 
-- No real OAuth setup required
-- Works out of the box for anyone
-- Simulates Google and Apple login flows
-- Creates demo user accounts automatically
-- Perfect for testing and demonstration
+- Google OAuth 2.0 integration
+- Secure token management
+- Automatic token refresh
+- Proper session handling
 
 ## Project Structure
 
 ```
 src/
 ├── components/          # React components
-│   ├── LoginScreen.tsx     # Authentication interface
+│   ├── LoginScreen.tsx     # OAuth authentication interface
 │   ├── Header.tsx          # Navigation header
-│   ├── RoleSelector.tsx    # User role selection
 │   ├── BookCard.tsx        # Book display component
 │   ├── BookForm.tsx        # Book upload form
 │   ├── SearchBooks.tsx     # Book search interface
 │   ├── DonorDashboard.tsx  # Donor management panel
 │   └── CollectorDashboard.tsx # Collector interface
 ├── context/             # React Context providers
-│   ├── AuthContext.tsx     # Authentication state
-│   └── DataContext.tsx     # Application data
+│   ├── AuthContext.tsx     # Authentication state management
+│   └── DataContext.tsx     # Application data management
 ├── services/            # Service layer
-│   └── authService.ts      # Authentication service
+│   └── authService.ts      # OAuth authentication service
+├── config/              # Configuration
+│   └── auth.ts            # OAuth configuration
 ├── types/               # TypeScript type definitions
 │   └── index.ts            # Application types
 └── App.tsx              # Main application component
@@ -73,12 +96,18 @@ src/
 
 - **Frontend**: React 18, TypeScript, Vite
 - **Styling**: Tailwind CSS, Lucide React Icons
-- **Authentication**: Simulated OAuth flows
+- **Authentication**: Google OAuth 2.0
 - **State Management**: React Context API
 - **Build Tool**: Vite with TypeScript support
-- **Code Quality**: ESLint, TypeScript strict mode
+- **Security**: Secure cookie handling, token refresh
 
 ## Key Features
+
+### Authentication
+- Real Google OAuth 2.0 integration
+- Secure token storage and management
+- Automatic token refresh
+- Proper logout handling
 
 ### For Book Donors
 - Upload books with multiple photos
@@ -94,14 +123,6 @@ src/
 - Track request status and approvals
 - View pickup locations for approved requests
 
-### General Features
-- Responsive design for all devices
-- Real-time search and filtering
-- Intuitive user interface
-- Role-based dashboards
-- Session persistence
-- Error handling and loading states
-
 ## Development
 
 ### Available Scripts
@@ -111,36 +132,66 @@ src/
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
 
-### Adding Real Authentication
+### Environment Variables
 
-To integrate real OAuth providers:
+Required environment variables:
 
-1. Replace the simulated auth service with real OAuth SDKs
-2. Set up Google Cloud Console and Apple Developer accounts
-3. Configure OAuth credentials and redirect URIs
-4. Update the authentication service implementation
+```env
+VITE_GOOGLE_CLIENT_ID=your-google-client-id
+```
+
+## Security Considerations
+
+### Production Deployment
+- Use HTTPS for all OAuth redirects
+- Implement proper CORS policies
+- Add rate limiting for authentication
+- Use secure cookie settings
+- Implement proper session management
+
+### Token Management
+- Automatic token refresh
+- Secure token storage
+- Proper logout cleanup
+- Session expiration handling
 
 ## Deployment
 
-The application is ready for deployment to any static hosting service:
+The application can be deployed to any static hosting service:
 
 - Netlify
 - Vercel
 - GitHub Pages
 - AWS S3 + CloudFront
 
+**Important**: Update OAuth redirect URIs in Google console to match your production domain.
+
+## Troubleshooting
+
+### Common Issues
+
+1. **OAuth Configuration Errors**: Check that client IDs and redirect URIs are correctly configured
+2. **CORS Issues**: Ensure your domain is added to OAuth provider settings
+3. **Token Expiration**: The app handles token refresh automatically
+
+For detailed troubleshooting, see [SETUP.md](SETUP.md).
+
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
+4. Test authentication thoroughly
 5. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under MIT License - see the LICENSE file for details.
 
-## Demo Notice
+## Support
 
-This is a demonstration platform with simulated authentication. In a production environment, you would integrate real OAuth providers and a backend database system.
+For setup help or issues:
+1. Check [SETUP.md](SETUP.md) for detailed configuration instructions
+2. Review the troubleshooting section
+3. Check browser console for error messages
+4. Ensure OAuth providers are correctly configured

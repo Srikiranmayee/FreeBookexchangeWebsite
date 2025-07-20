@@ -1,7 +1,17 @@
 import { User } from '../types';
+import { authConfig } from '../config/auth';
+import Cookies from 'js-cookie';
+
+declare global {
+  interface Window {
+    google: any;
+    gapi: any;
+  }
+}
 
 export class AuthService {
   private static instance: AuthService;
+  private googleAuth: any = null;
 
   static getInstance(): AuthService {
     if (!AuthService.instance) {
@@ -10,62 +20,141 @@ export class AuthService {
     return AuthService.instance;
   }
 
-  async signInWithGoogle(role: 'donor' | 'collector'): Promise<User> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const randomId = Math.random().toString(36).substring(7);
-        const mockGoogleUser: User = {
-          id: `google_${role}_${randomId}`,
-          name: `${role === 'donor' ? 'Book Donor' : 'Book Collector'} ${randomId.toUpperCase()}`,
-          email: `${role}${randomId}@gmail.com`,
-          avatar: `https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face`,
-          role: role,
-          createdAt: new Date(),
+  async initializeGoogle(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      if (window.gapi) {
+        window.gapi.load('auth2', () => {
+          window.gapi.auth2.init({
+            client_id: authConfig.google.clientId,
+            scope: authConfig.google.scopes.join(' ')
+          }).then(() => {
+            this.googleAuth = window.gapi.auth2.getAuthInstance();
+            resolve();
+          }).catch(reject);
+        });
+      } else {
+        // Load Google API script
+        const script = document.createElement('script');
+        script.src = 'https://apis.google.com/js/api.js';
+        script.onload = () => {
+          window.gapi.load('auth2', () => {
+            window.gapi.auth2.init({
+              client_id: authConfig.google.clientId,
+              scope: authConfig.google.scopes.join(' ')
+            }).then(() => {
+              this.googleAuth = window.gapi.auth2.getAuthInstance();
+              resolve();
+            }).catch(reject);
+          });
         };
-        
-        // Store user data
-        localStorage.setItem('user', JSON.stringify(mockGoogleUser));
-        localStorage.setItem('authToken', `google_${role}_token_${Date.now()}`);
-        
-        resolve(mockGoogleUser);
-      }, 1500); // Simulate network delay
+        script.onerror = reject;
+        document.head.appendChild(script);
+      }
     });
   }
 
-  async signInWithApple(role: 'donor' | 'collector'): Promise<User> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const randomId = Math.random().toString(36).substring(7);
-        const mockAppleUser: User = {
-          id: `apple_${role}_${randomId}`,
-          name: `${role === 'donor' ? 'Book Donor' : 'Book Collector'} ${randomId.toUpperCase()}`,
-          email: `${role}${randomId}@icloud.com`,
-          avatar: `https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face`,
-          role: role,
-          createdAt: new Date(),
-        };
-        
-        // Store user data
-        localStorage.setItem('user', JSON.stringify(mockAppleUser));
-        localStorage.setItem('authToken', `apple_${role}_token_${Date.now()}`);
-        
-        resolve(mockAppleUser);
-      }, 1500); // Simulate network delay
-    });
+  async signInWithGoogle(role: 'donor' | 'collector'): Promise<User> {
+    try {
+      // Initialize Google OAuth
+      await this.initializeGoogle();
+      
+      const authResult = await this.googleAuth.signIn();
+      const profile = authResult.getBasicProfile();
+      const authResponse = authResult.getAuthResponse();
+
+      const user: User = {
+        id: profile.getId(),
+        name: profile.getName(),
+        email: profile.getEmail(),
+        avatar: profile.getImageUrl(),
+        role: role,
+        createdAt: new Date(),
+      };
+
+      // Store authentication data
+      const authData = {
+        user,
+        token: authResponse.access_token,
+        provider: 'google',
+        expiresAt: new Date(Date.now() + authResponse.expires_in * 1000)
+      };
+
+      localStorage.setItem('authData', JSON.stringify(authData));
+      Cookies.set('authToken', authResponse.access_token, { 
+        expires: new Date(Date.now() + authResponse.expires_in * 1000),
+        secure: true,
+        sameSite: 'strict'
+      });
+
+      return user;
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      throw error;
+    }
   }
 
   signOut(): void {
-    localStorage.removeItem('user');
-    localStorage.removeItem('authToken');
+    const authData = this.getAuthData();
+    
+    if (authData?.provider === 'google' && this.googleAuth) {
+      this.googleAuth.signOut();
+    }
+    
+    // Clear all stored data
+    localStorage.removeItem('authData');
+    Cookies.remove('authToken');
   }
 
   getCurrentUser(): User | null {
-    const userData = localStorage.getItem('user');
-    return userData ? JSON.parse(userData) : null;
+    const authData = this.getAuthData();
+    return authData?.user || null;
   }
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('authToken');
+    const authData = this.getAuthData();
+    if (!authData) return false;
+    
+    // Check if token is expired
+    if (authData.expiresAt && new Date() > new Date(authData.expiresAt)) {
+      this.signOut();
+      return false;
+    }
+    
+    return !!authData.token;
+  }
+
+  private getAuthData(): any {
+    try {
+      const data = localStorage.getItem('authData');
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error('Error parsing auth data:', error);
+      return null;
+    }
+  }
+
+  async refreshToken(): Promise<void> {
+    const authData = this.getAuthData();
+    if (!authData) throw new Error('No authentication data found');
+
+    if (authData.provider === 'google' && this.googleAuth) {
+      try {
+        const authResponse = await this.googleAuth.currentUser.get().reloadAuthResponse();
+        authData.token = authResponse.access_token;
+        authData.expiresAt = new Date(Date.now() + authResponse.expires_in * 1000);
+        
+        localStorage.setItem('authData', JSON.stringify(authData));
+        Cookies.set('authToken', authResponse.access_token, { 
+          expires: new Date(Date.now() + authResponse.expires_in * 1000),
+          secure: true,
+          sameSite: 'strict'
+        });
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+        this.signOut();
+        throw new Error('Session expired. Please sign in again.');
+      }
+    }
   }
 }
 

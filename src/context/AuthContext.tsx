@@ -4,10 +4,11 @@ import { authService } from '../services/authService';
 
 interface AuthContextType {
   user: User | null;
-  login: (provider: 'google' | 'apple', role: 'donor' | 'collector') => Promise<void>;
+  login: (role: 'donor' | 'collector') => Promise<void>;
   logout: () => void;
   isLoading: boolean;
   error: string | null;
+  refreshAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,26 +33,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(currentUser);
     }
     setIsLoading(false);
+
+    // Set up token refresh interval
+    const refreshInterval = setInterval(async () => {
+      if (authService.isAuthenticated()) {
+        try {
+          await authService.refreshToken();
+        } catch (error) {
+          console.error('Token refresh failed:', error);
+          logout();
+        }
+      }
+    }, 30 * 60 * 1000); // Refresh every 30 minutes
+
+    return () => clearInterval(refreshInterval);
   }, []);
 
-  const login = async (provider: 'google' | 'apple', role: 'donor' | 'collector') => {
+  const login = async (role: 'donor' | 'collector') => {
     setIsLoading(true);
     setError(null);
     
     try {
-      let authenticatedUser: User;
-      
-      if (provider === 'google') {
-        authenticatedUser = await authService.signInWithGoogle(role);
-      } else {
-        authenticatedUser = await authService.signInWithApple(role);
-      }
+      const authenticatedUser = await authService.signInWithGoogle(role);
       
       setUser(authenticatedUser);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+      let errorMessage = 'Authentication failed';
+      if (error instanceof Error) {
+        if (error.message.includes('idpiframe_initialization_failed') || error.message.includes('Not a valid origin')) {
+          errorMessage = error.message;
+        } else {
+          errorMessage = error.message;
+        }
+      }
       setError(errorMessage);
-      console.error(`${provider} authentication error:`, error);
+      console.error('Google authentication error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -63,8 +79,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
   };
 
+  const refreshAuth = async () => {
+    try {
+      await authService.refreshToken();
+      const currentUser = authService.getCurrentUser();
+      setUser(currentUser);
+    } catch (error) {
+      console.error('Auth refresh failed:', error);
+      logout();
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading, error }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      login, 
+      logout, 
+      isLoading, 
+      error, 
+      refreshAuth 
+    }}>
       {children}
     </AuthContext.Provider>
   );
