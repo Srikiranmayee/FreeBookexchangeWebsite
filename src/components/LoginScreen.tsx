@@ -50,22 +50,18 @@ const LoginScreen: React.FC = () => {
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-red-800 font-medium text-sm">Configuration Required</p>
+                  <p className="text-red-800 font-medium text-sm">API Key Required</p>
                   <div className="text-red-700 text-xs mt-1 space-y-1">
-                    <p>• Google OAuth is not configured</p>
-                    <p>• Please set up Google OAuth credentials</p>
+                    <p>• Google API Key is not configured</p>
+                    <p>• Please set up Google API Key</p>
                   </div>
                   <div className="mt-3 text-xs text-red-600">
                     <p className="font-medium">Setup Instructions:</p>
                     <div className="mt-1 space-y-1">
                       <p>1. Create a <code className="bg-red-100 px-1 rounded">.env</code> file in your project root</p>
-                      <p>2. Add your Google OAuth credentials:</p>
+                      <p>2. Add your Google API Key:</p>
                       <div className="bg-red-100 p-2 rounded mt-1 font-mono text-xs">
-                        VITE_GOOGLE_CLIENT_ID=your-google-client-id
-                      </div>
-                      <p>3. Add this origin to Google Console:</p>
-                      <div className="bg-red-100 p-2 rounded mt-1 font-mono text-xs break-all">
-                        {window.location.origin}
+                        VITE_GOOGLE_API_KEY=your-google-api-key
                       </div>
                     </div>
                   </div>
@@ -74,54 +70,17 @@ const LoginScreen: React.FC = () => {
             </div>
           )}
 
-          {error && error.includes('Not a valid origin') && (
-            <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-orange-800 font-medium text-sm">Origin Not Authorized</p>
-                  <div className="text-orange-700 text-xs mt-1 space-y-2">
-                    <p>Your current URL is not registered in Google Cloud Console.</p>
-                    <div>
-                      <p className="font-medium">To fix this:</p>
-                      <ol className="list-decimal list-inside mt-1 space-y-1">
-                        <li>Go to <a href="https://console.developers.google.com/" target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:text-orange-700 underline">Google Cloud Console</a></li>
-                        <li>Navigate to APIs & Services → Credentials</li>
-                        <li>Edit your OAuth 2.0 Client ID</li>
-                        <li>Add this URL to "Authorized JavaScript origins":</li>
-                      </ol>
-                      <div className="bg-orange-100 p-2 rounded mt-2 font-mono text-xs break-all">
-                        {window.location.origin}
-                      </div>
-                      <p className="mt-1">Then save and try again.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {googleConfigured && <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-3">
+          {googleConfigured && <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start gap-3">
             <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-blue-800 font-medium text-sm">Real Google OAuth Authentication</p>
-              <p className="text-blue-700 text-xs mt-1">
-                This application uses real Google OAuth. Make sure your credentials are properly configured.
+              <p className="text-green-800 font-medium text-sm">Demo Mode Active</p>
+              <p className="text-green-700 text-xs mt-1">
+                Using demo authentication with Google API key. Click below to sign in as a donor or collector.
               </p>
-              <div className="mt-2 flex gap-2">
-                <a
-                  href="https://console.developers.google.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
-                >
-                  Google Console <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
             </div>
           </div>}
 
-          {error && !error.includes('Not a valid origin') && (
+          {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
               <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
               <div>

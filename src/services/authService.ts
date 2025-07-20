@@ -2,6 +2,26 @@ import { User } from '../types';
 import { authConfig } from '../config/auth';
 import Cookies from 'js-cookie';
 
+// Demo users for API key mode
+const demoUsers = {
+  donor: {
+    id: 'demo-donor-1',
+    name: 'Demo Donor',
+    email: 'donor@demo.com',
+    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100',
+    role: 'donor' as const,
+    createdAt: new Date(),
+  },
+  collector: {
+    id: 'demo-collector-1',
+    name: 'Demo Collector',
+    email: 'collector@demo.com',
+    avatar: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=100',
+    role: 'collector' as const,
+    createdAt: new Date(),
+  }
+};
+
 declare global {
   interface Window {
     google: any;
@@ -21,6 +41,10 @@ export class AuthService {
   }
 
   async initializeGoogle(): Promise<void> {
+    if (authConfig.google.clientId === 'demo-mode') {
+      return; // Skip Google initialization in demo mode
+    }
+
     return new Promise((resolve, reject) => {
       if (window.gapi) {
         window.gapi.load('auth2', () => {
@@ -55,16 +79,18 @@ export class AuthService {
 
   async signInWithGoogle(role: 'donor' | 'collector'): Promise<User> {
     try {
-      if (!authConfig.google.clientId) {
-        throw new Error('Google OAuth is not configured. Please set VITE_GOOGLE_CLIENT_ID environment variable.');
+      if (!authConfig.google.apiKey) {
+        throw new Error('Google API Key is not configured. Please set VITE_GOOGLE_API_KEY environment variable.');
       }
 
+      // Use demo authentication with API key
+      if (authConfig.google.clientId === 'demo-mode') {
+        return this.signInDemo(role);
+      }
+
+      // Original OAuth flow (if proper client ID is provided)
       await this.initializeGoogle();
       
-      if (!this.googleAuth) {
-        throw new Error('Google Auth not initialized');
-      }
-
       const authResult = await this.googleAuth.signIn();
       const profile = authResult.getBasicProfile();
       const authResponse = authResult.getAuthResponse();
@@ -96,23 +122,38 @@ export class AuthService {
       return user;
     } catch (error) {
       console.error('Google sign-in error:', error);
-      
-      // Handle specific Google OAuth errors
-      if (error && typeof error === 'object' && 'error' in error) {
-        const googleError = error as any;
-        if (googleError.error === 'idpiframe_initialization_failed') {
-          throw new Error(`Not a valid origin for the client: ${window.location.origin} has not been registered for client ID ${authConfig.google.clientId}. Please go to https://console.developers.google.com/ and register this origin for your project's client ID.`);
-        }
-      }
-      
-      throw new Error('Google authentication failed. Please try again.');
+      throw error;
     }
+  }
+
+  private async signInDemo(role: 'donor' | 'collector'): Promise<User> {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const user = demoUsers[role];
+
+    // Store demo authentication data
+    const authData = {
+      user,
+      token: `demo-token-${Date.now()}`,
+      provider: 'demo',
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+    };
+
+    localStorage.setItem('authData', JSON.stringify(authData));
+    Cookies.set('authToken', authData.token, { 
+      expires: 1, // 1 day
+      secure: false, // Allow for localhost
+      sameSite: 'lax'
+    });
+
+    return user;
   }
 
   signOut(): void {
     const authData = this.getAuthData();
     
-    if (authData?.provider === 'google' && this.googleAuth) {
+    if (authData?.provider === 'google' && this.googleAuth && authConfig.google.clientId !== 'demo-mode') {
       this.googleAuth.signOut();
     }
     
@@ -152,6 +193,19 @@ export class AuthService {
   async refreshToken(): Promise<void> {
     const authData = this.getAuthData();
     if (!authData) throw new Error('No authentication data found');
+
+    // Handle demo mode token refresh
+    if (authData.provider === 'demo') {
+      authData.token = `demo-token-${Date.now()}`;
+      authData.expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      localStorage.setItem('authData', JSON.stringify(authData));
+      Cookies.set('authToken', authData.token, { 
+        expires: 1,
+        secure: false,
+        sameSite: 'lax'
+      });
+      return;
+    }
 
     if (authData.provider === 'google' && this.googleAuth) {
       try {
