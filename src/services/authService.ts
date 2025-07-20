@@ -6,7 +6,6 @@ declare global {
   interface Window {
     google: any;
     gapi: any;
-    AppleID: any;
   }
 }
 
@@ -47,35 +46,6 @@ export class AuthService {
               resolve();
             }).catch(reject);
           });
-        };
-        script.onerror = reject;
-        document.head.appendChild(script);
-      }
-    });
-  }
-
-  async initializeApple(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (window.AppleID) {
-        window.AppleID.auth.init({
-          clientId: authConfig.apple.clientId,
-          scope: authConfig.apple.scope,
-          redirectURI: authConfig.apple.redirectURI,
-          usePopup: true
-        });
-        resolve();
-      } else {
-        // Load Apple ID script
-        const script = document.createElement('script');
-        script.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
-        script.onload = () => {
-          window.AppleID.auth.init({
-            clientId: authConfig.apple.clientId,
-            scope: authConfig.apple.scope,
-            redirectURI: authConfig.apple.redirectURI,
-            usePopup: true
-          });
-          resolve();
         };
         script.onerror = reject;
         document.head.appendChild(script);
@@ -127,71 +97,6 @@ export class AuthService {
     } catch (error) {
       console.error('Google sign-in error:', error);
       throw new Error('Google authentication failed. Please try again.');
-    }
-  }
-
-  async signInWithApple(role: 'donor' | 'collector'): Promise<User> {
-    try {
-      if (!authConfig.apple.clientId) {
-        throw new Error('Apple OAuth is not configured. Please set VITE_APPLE_CLIENT_ID environment variable.');
-      }
-
-      await this.initializeApple();
-
-      const response = await window.AppleID.auth.signIn();
-      
-      if (!response.authorization) {
-        throw new Error('Apple authorization failed');
-      }
-
-      // Parse the identity token to get user info
-      const identityToken = response.authorization.id_token;
-      const userInfo = this.parseJWT(identityToken);
-
-      const user: User = {
-        id: response.authorization.user || userInfo.sub,
-        name: response.user?.name ? 
-          `${response.user.name.firstName} ${response.user.name.lastName}` : 
-          userInfo.email?.split('@')[0] || 'Apple User',
-        email: response.user?.email || userInfo.email,
-        avatar: undefined, // Apple doesn't provide avatar
-        role: role,
-        createdAt: new Date(),
-      };
-
-      // Store authentication data
-      const authData = {
-        user,
-        token: response.authorization.code,
-        provider: 'apple',
-        expiresAt: new Date(Date.now() + 3600000) // 1 hour
-      };
-
-      localStorage.setItem('authData', JSON.stringify(authData));
-      Cookies.set('authToken', response.authorization.code, { 
-        expires: 1, // 1 day
-        secure: true,
-        sameSite: 'strict'
-      });
-
-      return user;
-    } catch (error) {
-      console.error('Apple sign-in error:', error);
-      throw new Error('Apple authentication failed. Please try again.');
-    }
-  }
-
-  private parseJWT(token: string): any {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
-    } catch (error) {
-      console.error('JWT parsing error:', error);
-      return {};
     }
   }
 

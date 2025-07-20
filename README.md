@@ -1,10 +1,10 @@
 # BookShare - Book Sharing Platform
 
-A modern book sharing platform with real Google and Apple OAuth authentication, allowing users to donate and collect books within their community.
+A modern book sharing platform with real Google OAuth authentication, allowing users to donate and collect books within their community.
 
 ## Features
 
-- **Real OAuth Authentication**: Google and Apple sign-in integration
+- **Real OAuth Authentication**: Google sign-in integration
 - **Dual User Roles**: Book donors and collectors with specialized dashboards
 - **Book Management**: Upload books with images and location details
 - **Advanced Search**: Filter books by title, author, genre, and condition
@@ -35,17 +35,9 @@ Before running the application, you need to set up OAuth credentials:
    - Create OAuth credentials and add your domain
    - Copy the Client ID to your `.env` file
 
-3. **Set up Apple OAuth:**
-   - Go to [Apple Developer Portal](https://developer.apple.com/account/)
-   - Create App ID and Service ID with Sign In with Apple
-   - Configure domains and return URLs
-   - Copy the Service ID to your `.env` file
-
-4. **Update your `.env` file:**
+3. **Update your `.env` file:**
    ```env
    VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-   VITE_APPLE_CLIENT_ID=your.apple.service.id
-   VITE_APPLE_REDIRECT_URI=http://localhost:5173
    ```
 
 For detailed setup instructions, see [SETUP.md](SETUP.md).
@@ -60,8 +52,8 @@ The application will be available at `http://localhost:5173`
 
 ## How to Use
 
-1. **Configure OAuth**: Follow the setup guide to configure Google and Apple OAuth
-2. **Login**: Click either "Continue with Google" or "Continue with Apple"
+1. **Configure OAuth**: Follow the setup guide to configure Google OAuth
+2. **Login**: Click "Continue as Donor" or "Continue as Collector" to sign in with Google
 3. **Choose Role**: Select whether you want to be a book donor or collector
 4. **Start Sharing**: 
    - **Donors**: Upload books with photos and pickup locations
@@ -69,10 +61,9 @@ The application will be available at `http://localhost:5173`
 
 ## Authentication System
 
-This platform uses **real OAuth authentication**:
+This platform uses **real Google OAuth authentication**:
 
 - Google OAuth 2.0 integration
-- Apple Sign In integration
 - Secure token management
 - Automatic token refresh
 - Proper session handling
@@ -105,7 +96,7 @@ src/
 
 - **Frontend**: React 18, TypeScript, Vite
 - **Styling**: Tailwind CSS, Lucide React Icons
-- **Authentication**: Google OAuth 2.0, Apple Sign In
+- **Authentication**: Google OAuth 2.0
 - **State Management**: React Context API
 - **Build Tool**: Vite with TypeScript support
 - **Security**: Secure cookie handling, token refresh
@@ -114,7 +105,6 @@ src/
 
 ### Authentication
 - Real Google OAuth 2.0 integration
-- Apple Sign In support
 - Secure token storage and management
 - Automatic token refresh
 - Proper logout handling
@@ -148,8 +138,6 @@ Required environment variables:
 
 ```env
 VITE_GOOGLE_CLIENT_ID=your-google-client-id
-VITE_APPLE_CLIENT_ID=your-apple-service-id
-VITE_APPLE_REDIRECT_URI=your-redirect-uri
 ```
 
 ## Security Considerations
@@ -177,6 +165,7 @@ The application can be deployed to any static hosting service:
 - AWS S3 + CloudFront
 
 **Important**: Update OAuth redirect URIs in both Google and Apple consoles to match your production domain.
+**Important**: Update OAuth redirect URIs in Google console to match your production domain.
 
 ## Troubleshooting
 

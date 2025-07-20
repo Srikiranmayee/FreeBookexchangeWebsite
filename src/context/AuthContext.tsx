@@ -4,7 +4,7 @@ import { authService } from '../services/authService';
 
 interface AuthContextType {
   user: User | null;
-  login: (provider: 'google' | 'apple', role: 'donor' | 'collector') => Promise<void>;
+  login: (role: 'donor' | 'collector') => Promise<void>;
   logout: () => void;
   isLoading: boolean;
   error: string | null;
@@ -49,24 +49,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(refreshInterval);
   }, []);
 
-  const login = async (provider: 'google' | 'apple', role: 'donor' | 'collector') => {
+  const login = async (role: 'donor' | 'collector') => {
     setIsLoading(true);
     setError(null);
     
     try {
-      let authenticatedUser: User;
-      
-      if (provider === 'google') {
-        authenticatedUser = await authService.signInWithGoogle(role);
-      } else {
-        authenticatedUser = await authService.signInWithApple(role);
-      }
+      const authenticatedUser = await authService.signInWithGoogle(role);
       
       setUser(authenticatedUser);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
       setError(errorMessage);
-      console.error(`${provider} authentication error:`, error);
+      console.error('Google authentication error:', error);
     } finally {
       setIsLoading(false);
     }

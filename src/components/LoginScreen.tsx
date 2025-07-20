@@ -1,34 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { authConfig, validateAuthConfig, isProviderConfigured } from '../config/auth';
-import { Book, Apple, Loader2, AlertCircle, Info, BookOpen, Search, ExternalLink } from 'lucide-react';
+import { authConfig, validateAuthConfig, isGoogleConfigured } from '../config/auth';
+import { Book, Loader2, AlertCircle, Info, BookOpen, Search, ExternalLink } from 'lucide-react';
 
 const LoginScreen: React.FC = () => {
   const { login, isLoading, error } = useAuth();
-  const [loginProvider, setLoginProvider] = useState<{ provider: 'google' | 'apple'; role: 'donor' | 'collector' } | null>(null);
+  const [loginRole, setLoginRole] = useState<'donor' | 'collector' | null>(null);
 
-  const googleConfigured = isProviderConfigured('google');
-  const appleConfigured = isProviderConfigured('apple');
-  const hasAnyProvider = googleConfigured || appleConfigured;
+  const googleConfigured = isGoogleConfigured();
 
-  const handleLogin = async (provider: 'google' | 'apple', role: 'donor' | 'collector') => {
-    if (!isProviderConfigured(provider)) {
-      console.error(`${provider} is not configured`);
+  const handleLogin = async (role: 'donor' | 'collector') => {
+    if (!googleConfigured) {
+      console.error('Google is not configured');
       return;
     }
     
-    setLoginProvider({ provider, role });
+    setLoginRole(role);
     try {
-      await login(provider, role);
+      await login(role);
     } catch (error) {
       console.error('Login failed:', error);
     } finally {
-      setLoginProvider(null);
+      setLoginRole(null);
     }
   };
 
-  const isCurrentlyLoading = (provider: 'google' | 'apple', role: 'donor' | 'collector') => {
-    return isLoading && loginProvider?.provider === provider && loginProvider?.role === role;
+  const isCurrentlyLoading = (role: 'donor' | 'collector') => {
+    return isLoading && loginRole === role;
   };
 
   return (
@@ -47,25 +45,23 @@ const LoginScreen: React.FC = () => {
             Choose Your Role & Sign In
           </h2>
 
-          {!hasAnyProvider && (
+          {!googleConfigured && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-red-800 font-medium text-sm">Configuration Required</p>
                   <div className="text-red-700 text-xs mt-1 space-y-1">
-                    <p>• No OAuth providers are configured</p>
-                    <p>• Please set up at least Google or Apple OAuth credentials</p>
+                    <p>• Google OAuth is not configured</p>
+                    <p>• Please set up Google OAuth credentials</p>
                   </div>
                   <div className="mt-3 text-xs text-red-600">
                     <p className="font-medium">Setup Instructions:</p>
                     <div className="mt-1 space-y-1">
                       <p>1. Create a <code className="bg-red-100 px-1 rounded">.env</code> file in your project root</p>
-                      <p>2. Add your OAuth credentials:</p>
+                      <p>2. Add your Google OAuth credentials:</p>
                       <div className="bg-red-100 p-2 rounded mt-1 font-mono text-xs">
-                        VITE_GOOGLE_CLIENT_ID=your-google-client-id<br/>
-                        VITE_APPLE_CLIENT_ID=your-apple-service-id<br/>
-                        VITE_APPLE_REDIRECT_URI=http://localhost:5173
+                        VITE_GOOGLE_CLIENT_ID=your-google-client-id
                       </div>
                     </div>
                   </div>
@@ -74,12 +70,12 @@ const LoginScreen: React.FC = () => {
             </div>
           )}
 
-          {hasAnyProvider && <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-3">
+          {googleConfigured && <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-3">
             <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-blue-800 font-medium text-sm">Real OAuth Authentication</p>
+              <p className="text-blue-800 font-medium text-sm">Real Google OAuth Authentication</p>
               <p className="text-blue-700 text-xs mt-1">
-                This application uses real Google and Apple OAuth. You'll need to configure your OAuth credentials.
+                This application uses real Google OAuth. Make sure your credentials are properly configured.
               </p>
               <div className="mt-2 flex gap-2">
                 <a
@@ -89,14 +85,6 @@ const LoginScreen: React.FC = () => {
                   className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
                 >
                   Google Console <ExternalLink className="w-3 h-3" />
-                </a>
-                <a
-                  href="https://developer.apple.com/account/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
-                >
-                  Apple Developer <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
             </div>
@@ -124,11 +112,11 @@ const LoginScreen: React.FC = () => {
               </div>
 
               <button
-                onClick={() => handleLogin('google', 'donor')}
+                onClick={() => handleLogin('donor')}
                 disabled={isLoading || !googleConfigured}
                 className="w-full flex items-center justify-center px-6 py-3 border border-gray-300 rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
               >
-                {isCurrentlyLoading('google', 'donor') ? (
+                {isCurrentlyLoading('donor') ? (
                   <Loader2 className="w-5 h-5 mr-3 animate-spin" />
                 ) : (
                   <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -138,20 +126,7 @@ const LoginScreen: React.FC = () => {
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
                 )}
-                Donor - Google
-              </button>
-
-              <button
-                onClick={() => handleLogin('apple', 'donor')}
-                disabled={isLoading || !appleConfigured}
-                className="w-full flex items-center justify-center px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
-              >
-                {isCurrentlyLoading('apple', 'donor') ? (
-                  <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                ) : (
-                  <Apple className="w-5 h-5 mr-3" />
-                )}
-                Donor - Apple
+                Continue as Donor
               </button>
             </div>
 
@@ -166,11 +141,11 @@ const LoginScreen: React.FC = () => {
               </div>
 
               <button
-                onClick={() => handleLogin('google', 'collector')}
+                onClick={() => handleLogin('collector')}
                 disabled={isLoading || !googleConfigured}
                 className="w-full flex items-center justify-center px-6 py-3 border border-gray-300 rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
               >
-                {isCurrentlyLoading('google', 'collector') ? (
+                {isCurrentlyLoading('collector') ? (
                   <Loader2 className="w-5 h-5 mr-3 animate-spin" />
                 ) : (
                   <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -180,20 +155,7 @@ const LoginScreen: React.FC = () => {
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
                 )}
-                Collector - Google
-              </button>
-
-              <button
-                onClick={() => handleLogin('apple', 'collector')}
-                disabled={isLoading || !appleConfigured}
-                className="w-full flex items-center justify-center px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
-              >
-                {isCurrentlyLoading('apple', 'collector') ? (
-                  <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                ) : (
-                  <Apple className="w-5 h-5 mr-3" />
-                )}
-                Collector - Apple
+                Continue as Collector
               </button>
             </div>
           </div>

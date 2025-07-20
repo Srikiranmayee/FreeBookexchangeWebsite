@@ -1,8 +1,8 @@
-# Authentication Setup Guide
+# Google Authentication Setup Guide
 
-This application uses real OAuth authentication with Google and Apple. Follow these steps to configure authentication:
+This application uses real Google OAuth authentication. Follow these steps to configure authentication:
 
-## 1. Google OAuth Setup
+## Google OAuth Setup
 
 ### Step 1: Create a Google Cloud Project
 1. Go to [Google Cloud Console](https://console.developers.google.com/)
@@ -28,66 +28,28 @@ This application uses real OAuth authentication with Google and Apple. Follow th
    - Your production domain (for production)
 5. Copy the Client ID
 
-## 2. Apple OAuth Setup
-
-### Step 1: Apple Developer Account
-1. You need an Apple Developer account ($99/year)
-2. Go to [Apple Developer Portal](https://developer.apple.com/account/)
-
-### Step 2: Create App ID
-1. Go to "Certificates, Identifiers & Profiles"
-2. Click "Identifiers" → "+"
-3. Choose "App IDs"
-4. Configure:
-   - Description: "BookShare Web App"
-   - Bundle ID: `com.yourcompany.bookshare`
-   - Enable "Sign In with Apple"
-
-### Step 3: Create Service ID
-1. Go to "Identifiers" → "+"
-2. Choose "Services IDs"
-3. Configure:
-   - Description: "BookShare Web Service"
-   - Identifier: `com.yourcompany.bookshare.web`
-   - Enable "Sign In with Apple"
-4. Configure domains and subdomains:
-   - Primary App ID: Select the App ID created above
-   - Domains: `localhost` (for development), your domain (for production)
-   - Return URLs: `http://localhost:5173` (for development)
-
-### Step 4: Create Private Key
-1. Go to "Keys" → "+"
-2. Key Name: "BookShare Sign In Key"
-3. Enable "Sign In with Apple"
-4. Configure and download the key file
-5. Note the Key ID
-
-## 3. Environment Configuration
+## Environment Configuration
 
 ### Step 1: Create Environment File
 1. Copy `.env.example` to `.env`
-2. Fill in your OAuth credentials:
+2. Fill in your Google OAuth credentials:
 
 ```env
 # Google OAuth
 VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-
-# Apple OAuth
-VITE_APPLE_CLIENT_ID=com.yourcompany.bookshare.web
-VITE_APPLE_REDIRECT_URI=http://localhost:5173
 ```
 
 ### Step 2: Update for Production
-For production deployment, update the redirect URIs in both OAuth providers and your environment variables.
+For production deployment, update the redirect URIs in Google OAuth console and your environment variables.
 
-## 4. Testing Authentication
+## Testing Authentication
 
 1. Start the development server: `npm run dev`
-2. Try signing in with both Google and Apple
+2. Try signing in with Google
 3. Check browser console for any errors
 4. Verify user data is correctly stored
 
-## 5. Security Considerations
+## Security Considerations
 
 ### For Production:
 - Use HTTPS for all OAuth redirects
@@ -103,7 +65,7 @@ For production deployment, update the redirect URIs in both OAuth providers and 
 - Clear tokens on logout
 - Use secure cookie settings
 
-## 6. Troubleshooting
+## Troubleshooting
 
 ### Common Issues:
 
@@ -112,15 +74,10 @@ For production deployment, update the redirect URIs in both OAuth providers and 
 - Ensure Google+ API is enabled
 - Verify client ID is correct
 
-**Apple OAuth Errors:**
-- Ensure Service ID is properly configured
-- Check that return URLs match exactly
-- Verify Apple Developer account is active
-
 **General Issues:**
 - Check browser console for detailed error messages
 - Ensure environment variables are loaded correctly
-- Verify OAuth provider configurations
+- Verify Google OAuth configuration
 
 ### Debug Mode:
 Add this to your `.env` for debugging:
@@ -128,8 +85,7 @@ Add this to your `.env` for debugging:
 VITE_DEBUG_AUTH=true
 ```
 
-## 7. Additional Resources
+## Additional Resources
 
 - [Google OAuth Documentation](https://developers.google.com/identity/protocols/oauth2)
-- [Apple Sign In Documentation](https://developer.apple.com/documentation/sign_in_with_apple)
 - [OAuth 2.0 Security Best Practices](https://tools.ietf.org/html/draft-ietf-oauth-security-topics)
