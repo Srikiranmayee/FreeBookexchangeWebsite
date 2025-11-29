@@ -157,4 +157,4 @@ Works on all modern browsers that support:
 
 ## License
 
-This project is licensed under MIT License - see the LICENSE file for details.
+This project is licensed under Free License - you can use my code.
