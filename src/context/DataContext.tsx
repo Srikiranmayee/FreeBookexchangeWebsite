@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Book, CollectionRequest } from '../types';
+import { storageService } from '../services/storageService';
 
 interface DataContextType {
   books: Book[];
@@ -22,92 +23,43 @@ export const useData = () => {
 };
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [books, setBooks] = useState<Book[]>([
-    {
-      id: '1',
-      title: 'The Great Gatsby',
-      author: 'F. Scott Fitzgerald',
-      genre: 'Classic Literature',
-      condition: 'good',
-      description: 'A timeless classic about the American Dream',
-      images: ['https://images.pexels.com/photos/1029141/pexels-photo-1029141.jpeg?auto=compress&cs=tinysrgb&w=400'],
-      donorId: '1',
-      donor: {
-        id: '1',
-        name: 'Alice Johnson',
-        email: 'alice@example.com',
-        role: 'donor',
-        createdAt: new Date(),
-      },
-      location: {
-        lat: 40.7128,
-        lng: -74.0060,
-        address: '123 Main St, New York, NY 10001',
-      },
-      status: 'available',
-      createdAt: new Date(),
-    },
-    {
-      id: '2',
-      title: 'To Kill a Mockingbird',
-      author: 'Harper Lee',
-      genre: 'Fiction',
-      condition: 'excellent',
-      description: 'A gripping tale of racial injustice and childhood',
-      images: ['https://images.pexels.com/photos/1029141/pexels-photo-1029141.jpeg?auto=compress&cs=tinysrgb&w=400'],
-      donorId: '2',
-      donor: {
-        id: '2',
-        name: 'Bob Smith',
-        email: 'bob@example.com',
-        role: 'donor',
-        createdAt: new Date(),
-      },
-      location: {
-        lat: 40.7589,
-        lng: -73.9851,
-        address: '456 Park Ave, New York, NY 10022',
-      },
-      status: 'available',
-      createdAt: new Date(),
-    },
-  ]);
-
+  const [books, setBooks] = useState<Book[]>([]);
   const [requests, setRequests] = useState<CollectionRequest[]>([]);
+
+  useEffect(() => {
+    setBooks(storageService.getAllBooks());
+    setRequests(storageService.getAllRequests());
+  }, []);
 
   const addBook = (bookData: Omit<Book, 'id' | 'createdAt'>) => {
     const newBook: Book = {
       ...bookData,
-      id: Math.random().toString(36).substring(7),
+      id: Date.now().toString(),
       createdAt: new Date(),
     };
-    setBooks(prev => [...prev, newBook]);
+    storageService.addBook(newBook);
+    setBooks(storageService.getAllBooks());
   };
 
   const updateBookStatus = (bookId: string, status: Book['status']) => {
-    setBooks(prev =>
-      prev.map(book =>
-        book.id === bookId ? { ...book, status } : book
-      )
-    );
+    storageService.updateBook(bookId, { status });
+    setBooks(storageService.getAllBooks());
   };
 
   const createRequest = (bookId: string, collectorId: string, message?: string) => {
-    const book = books.find(b => b.id === bookId);
+    const allBooks = storageService.getAllBooks();
+    const book = allBooks.find(b => b.id === bookId);
     if (!book) return;
 
+    const currentUser = storageService.getCurrentUser();
+    if (!currentUser) return;
+
     const newRequest: CollectionRequest = {
-      id: Math.random().toString(36).substring(7),
+      id: Date.now().toString(),
       bookId,
       book,
       collectorId,
-      collector: {
-        id: collectorId,
-        name: 'Current User',
-        email: 'user@example.com',
-        role: 'collector',
-        createdAt: new Date(),
-      },
+      collector: currentUser,
       donorId: book.donorId,
       status: 'pending',
       message,
@@ -115,21 +67,18 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updatedAt: new Date(),
     };
 
-    setRequests(prev => [...prev, newRequest]);
+    storageService.addRequest(newRequest);
     updateBookStatus(bookId, 'requested');
+    setRequests(storageService.getAllRequests());
   };
 
   const updateRequestStatus = (requestId: string, status: CollectionRequest['status']) => {
-    setRequests(prev =>
-      prev.map(request =>
-        request.id === requestId
-          ? { ...request, status, updatedAt: new Date() }
-          : request
-      )
-    );
+    storageService.updateRequest(requestId, { status, updatedAt: new Date() });
+    setRequests(storageService.getAllRequests());
 
     if (status === 'approved') {
-      const request = requests.find(r => r.id === requestId);
+      const allRequests = storageService.getAllRequests();
+      const request = allRequests.find(r => r.id === requestId);
       if (request) {
         updateBookStatus(request.bookId, 'collected');
       }
@@ -138,7 +87,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const searchBooks = (query: string): Book[] => {
     if (!query.trim()) return books;
-    
+
     return books.filter(book =>
       book.title.toLowerCase().includes(query.toLowerCase()) ||
       book.author.toLowerCase().includes(query.toLowerCase()) ||

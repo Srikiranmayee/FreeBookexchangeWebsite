@@ -7,7 +7,7 @@ import DonorDashboard from './components/DonorDashboard';
 import CollectorDashboard from './components/CollectorDashboard';
 
 const AppContent: React.FC = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, login, register, error } = useAuth();
 
   if (isLoading) {
     return (
@@ -21,7 +21,7 @@ const AppContent: React.FC = () => {
   }
 
   if (!user) {
-    return <LoginScreen />;
+    return <LoginScreen onLogin={login} onRegister={register} error={error} />;
   }
 
   return (

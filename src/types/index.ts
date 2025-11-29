@@ -4,6 +4,7 @@ export interface User {
   email: string;
   avatar?: string;
   role: 'donor' | 'collector';
+  password?: string;
   location?: {
     lat: number;
     lng: number;

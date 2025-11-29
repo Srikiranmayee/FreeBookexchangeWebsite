@@ -1,16 +1,17 @@
 # BookShare - Book Sharing Platform
 
-A modern book sharing platform with real Google OAuth authentication, allowing users to donate and collect books within their community.
+A modern book sharing platform with simple username/password authentication, allowing users to donate and collect books within their community. All data is stored locally in the browser's localStorage, making it perfect for deployment as a static website.
 
 ## Features
 
-- **Real OAuth Authentication**: Google sign-in integration
+- **Simple Authentication**: Username and password-based registration and login
 - **Dual User Roles**: Book donors and collectors with specialized dashboards
 - **Book Management**: Upload books with images and location details
 - **Advanced Search**: Filter books by title, author, genre, and condition
 - **Request System**: Collectors can request books with donor approval
-- **Location-Based**: Address input with map integration ready
+- **Location-Based**: Address input for book pickup locations
 - **Responsive Design**: Optimized for mobile, tablet, and desktop
+- **Static Site Ready**: Perfect for S3, Netlify, Vercel, or GitHub Pages
 
 ## Quick Start
 
@@ -20,29 +21,7 @@ A modern book sharing platform with real Google OAuth authentication, allowing u
 npm install
 ```
 
-### 2. Configure Authentication
-
-Before running the application, you need to set up OAuth credentials:
-
-1. **Copy the environment template:**
-   ```bash
-   cp .env.example .env
-   ```
-
-2. **Set up Google OAuth:**
-   - Go to [Google Cloud Console](https://console.developers.google.com/)
-   - Create a project and enable Google+ API
-   - Create OAuth credentials and add your domain
-   - Copy the Client ID to your `.env` file
-
-3. **Update your `.env` file:**
-   ```env
-   VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-   ```
-
-For detailed setup instructions, see [SETUP.md](SETUP.md).
-
-### 3. Run the Application
+### 2. Run the Application
 
 ```bash
 npm run dev
@@ -50,67 +29,97 @@ npm run dev
 
 The application will be available at `http://localhost:5173`
 
+### 3. Build for Production
+
+```bash
+npm run build
+```
+
+The built files will be in the `dist` folder, ready for deployment.
+
 ## How to Use
 
-1. **Configure OAuth**: Follow the setup guide to configure Google OAuth
-2. **Login**: Click "Continue as Donor" or "Continue as Collector" to sign in with Google
-3. **Choose Role**: Select whether you want to be a book donor or collector
-4. **Start Sharing**: 
+1. **Create Account**: Click "Create Account" and choose your username, password, and role
+2. **Choose Role**: Select whether you want to be a book donor or collector
+3. **Start Sharing**:
    - **Donors**: Upload books with photos and pickup locations
    - **Collectors**: Search and request books from the community
 
-## Authentication System
+## Data Storage
 
-This platform uses **real Google OAuth authentication**:
+All data is stored in the browser's localStorage:
+- User accounts and authentication
+- Books and their details
+- Collection requests
+- Book images (stored as base64-encoded strings)
 
-- Google OAuth 2.0 integration
-- Secure token management
-- Automatic token refresh
-- Proper session handling
+The app initializes with sample books to help you get started.
+
+## Deployment
+
+This is a static website that can be deployed to:
+
+### AWS S3
+1. Build the project: `npm run build`
+2. Upload the `dist` folder contents to your S3 bucket
+3. Enable static website hosting on your bucket
+4. Set index.html as the index document
+
+### Netlify
+1. Connect your repository
+2. Build command: `npm run build`
+3. Publish directory: `dist`
+
+### Vercel
+1. Connect your repository
+2. Build command: `npm run build`
+3. Output directory: `dist`
+
+### GitHub Pages
+1. Build the project: `npm run build`
+2. Push the `dist` folder to your gh-pages branch
 
 ## Project Structure
 
 ```
 src/
-├── components/          # React components
-│   ├── LoginScreen.tsx     # OAuth authentication interface
-│   ├── Header.tsx          # Navigation header
-│   ├── BookCard.tsx        # Book display component
-│   ├── BookForm.tsx        # Book upload form
-│   ├── SearchBooks.tsx     # Book search interface
-│   ├── DonorDashboard.tsx  # Donor management panel
+├── components/             # React components
+│   ├── LoginScreen.tsx        # Authentication interface
+│   ├── Header.tsx             # Navigation header
+│   ├── BookCard.tsx           # Book display component
+│   ├── BookForm.tsx           # Book upload form
+│   ├── SearchBooks.tsx        # Book search interface
+│   ├── DonorDashboard.tsx     # Donor management panel
 │   └── CollectorDashboard.tsx # Collector interface
-├── context/             # React Context providers
-│   ├── AuthContext.tsx     # Authentication state management
-│   └── DataContext.tsx     # Application data management
-├── services/            # Service layer
-│   └── authService.ts      # OAuth authentication service
-├── config/              # Configuration
-│   └── auth.ts            # OAuth configuration
-├── types/               # TypeScript type definitions
-│   └── index.ts            # Application types
-└── App.tsx              # Main application component
+├── context/                # React Context providers
+│   ├── AuthContext.tsx        # Authentication state management
+│   └── DataContext.tsx        # Application data management
+├── services/               # Service layer
+│   └── storageService.ts      # localStorage management
+├── types/                  # TypeScript type definitions
+│   └── index.ts               # Application types
+└── App.tsx                 # Main application component
 ```
 
 ## Technology Stack
 
 - **Frontend**: React 18, TypeScript, Vite
 - **Styling**: Tailwind CSS, Lucide React Icons
-- **Authentication**: Google OAuth 2.0
+- **Authentication**: Simple username/password with localStorage
 - **State Management**: React Context API
+- **Storage**: Browser localStorage
 - **Build Tool**: Vite with TypeScript support
-- **Security**: Secure cookie handling, token refresh
 
 ## Key Features
 
 ### Authentication
-- Real Google OAuth 2.0 integration
-- Secure token storage and management
-- Automatic token refresh
+- Simple username/password registration
+- Secure password encoding (base64)
+- Persistent sessions via localStorage
 - Proper logout handling
 
 ### For Book Donors
-- Upload books with multiple photos
+- Upload books with multiple photos (base64 encoded)
 - Set pickup locations and addresses
 - Manage collection requests from users
 - Track book sharing statistics
@@ -132,66 +141,20 @@ src/
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
 
-### Environment Variables
+## Browser Compatibility
 
-Required environment variables:
+Works on all modern browsers that support:
+- ES2020
+- localStorage API
+- FileReader API (for image uploads)
 
-```env
-VITE_GOOGLE_CLIENT_ID=your-google-client-id
-```
+## Notes
 
-## Security Considerations
-
-### Production Deployment
-- Use HTTPS for all OAuth redirects
-- Implement proper CORS policies
-- Add rate limiting for authentication
-- Use secure cookie settings
-- Implement proper session management
-
-### Token Management
-- Automatic token refresh
-- Secure token storage
-- Proper logout cleanup
-- Session expiration handling
-
-## Deployment
-
-The application can be deployed to any static hosting service:
-
-- Netlify
-- Vercel
-- GitHub Pages
-- AWS S3 + CloudFront
-
-**Important**: Update OAuth redirect URIs in Google console to match your production domain.
-
-## Troubleshooting
-
-### Common Issues
-
-1. **OAuth Configuration Errors**: Check that client IDs and redirect URIs are correctly configured
-2. **CORS Issues**: Ensure your domain is added to OAuth provider settings
-3. **Token Expiration**: The app handles token refresh automatically
-
-For detailed troubleshooting, see [SETUP.md](SETUP.md).
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test authentication thoroughly
-5. Submit a pull request
+- All data is stored locally in the browser
+- Clearing browser data will reset the application
+- Images are stored as base64 strings in localStorage
+- Storage limits depend on the browser (typically 5-10MB)
 
 ## License
 
 This project is licensed under MIT License - see the LICENSE file for details.
-
-## Support
-
-For setup help or issues:
-1. Check [SETUP.md](SETUP.md) for detailed configuration instructions
-2. Review the troubleshooting section
-3. Check browser console for error messages
-4. Ensure OAuth providers are correctly configured
