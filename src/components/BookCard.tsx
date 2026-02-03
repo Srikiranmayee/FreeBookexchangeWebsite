@@ -1,5 +1,5 @@
 import React from 'react';
-import { Book, User } from '../types';
+import { Book } from '../types';
 import { MapPin, Clock, User as UserIcon } from 'lucide-react';
 
 interface BookCardProps {

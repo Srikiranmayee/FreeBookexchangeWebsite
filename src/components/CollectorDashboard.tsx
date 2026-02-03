@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { Search, BookOpen, Clock, CheckCircle, MessageCircle } from 'lucide-react';
+import { BookOpen, Clock, CheckCircle, MessageCircle } from 'lucide-react';
 import SearchBooks from './SearchBooks';
 
 const CollectorDashboard: React.FC = () => {

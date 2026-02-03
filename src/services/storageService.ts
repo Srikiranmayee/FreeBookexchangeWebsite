@@ -53,7 +53,8 @@ class StorageService {
     const user = users.find(u => u.email === username && u.password === btoa(password));
 
     if (user) {
-      const { password: _, ...userWithoutPassword } = user;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password: _password, ...userWithoutPassword } = user;
       localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(userWithoutPassword));
       return userWithoutPassword as User;
     }
@@ -75,7 +76,7 @@ class StorageService {
     const books = localStorage.getItem(STORAGE_KEYS.BOOKS);
     if (!books) return [];
 
-    return JSON.parse(books).map((book: any) => ({
+    return JSON.parse(books).map((book: Book) => ({
       ...book,
       createdAt: new Date(book.createdAt),
       donor: {
@@ -109,7 +110,7 @@ class StorageService {
     const requests = localStorage.getItem(STORAGE_KEYS.REQUESTS);
     if (!requests) return [];
 
-    return JSON.parse(requests).map((req: any) => ({
+    return JSON.parse(requests).map((req: CollectionRequest) => ({
       ...req,
       createdAt: new Date(req.createdAt),
       updatedAt: new Date(req.updatedAt),
